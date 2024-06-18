@@ -1,3 +1,49 @@
+## Data Procurement
+
+### Tract Centers
+
+-   [2010 Census Centers of Population](https://www2.census.gov/geo/docs/reference/cenpop2010/tract/CenPop2010_Mean_TR.txt) were downloaded
+
+-   2010 States were downloaded using the `tigris` package
+
+### Distance to Storm Track
+
+-   [Most recent HURDAT2](https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2023-051124.txt) data was downloaded from the NOAA FTP Server. HURDAT2 contains the best track location, maximum winds, central pressure, and size for every known tropical cyclone and subtropical cyclone at 6 hour intervals.
+
+### Storm Wind Model
+
+-   No extra data was downloaded
+
+### Inverse Weighted Distance Precipitation
+
+-   Station metadata was downloaded from the [NOAA Global Historical Climatology Network daily](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily). This metadata has lat and lon locations and the name of state for each station
+
+-   Station measurement data was downloaded from the [NOAA Global Historical Climatology Network daily](https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily) FTP server and filtered to those within the relevant state (NC or TX and LA) and neighboring states without quality flags
+
+## Data Processing
+
+### Tract Centers
+
+-   2010 states feature was used to identify if a center of population was over land or water.
+
+-   Otherwise, nothing was changed except column names.
+
+### Distance to Storm Track
+
+-   Hurdat2 data was cleaned using the `02-clean_hurr_tracks.R` script, which mainly generates storm ids, translates lon lat into usable format, and removes storms before 1988.
+
+-   Hurricane track was imputed to every 15 minutes using `create_full_track` from the `stormwindmodel` package.
+
+-   Distance from every centroid to the closest point on the 15 minute imputed path was calculated. Time of closest point on the 15 minute imputed path was also recorded.
+
+### Storm Wind Model
+
+-   The `calc_grid_winds` and `summarize_grid_winds` commands were used to calculate wind exposure for each centroid. It works by using the distance to track and wind radii from the HURDAT2 to calculate estimated wind exposure. These commands can be found within `05-calc_windmodel_data.R.`
+
+### Inverse Weighted Distance Precipitation
+
+-   The `gstat` package was used to predict inverse distance weighted predictions of precipitation at the each centroid. The code for this process can be found in `08-idw_precip.R`.
+
 ### Get Tract Centers
 
 ```{r}
