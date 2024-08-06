@@ -44,6 +44,14 @@
 
 -   The `gstat` package was used to predict inverse distance weighted predictions of precipitation at the each centroid. The code for this process can be found in `08-idw_precip.R`.
 
+### Outage Percentage and Duration
+
+-   Loads hurricane track data processed by 02-clean_hurr_tracks.R and gets the start and end dates for the specified storm
+
+-   Using the table of indexes produced 09-eaglei_date_indexes.R, reads in the outage data from the start and end row of the relevant dates
+
+-   Reads in the modeled customer estimates and uses them to calculate the maximum percentage of customers with no electricity and the average outage duration per customer over the duration of a specified storm plus 5 days after.
+
 ### Get Tract Centers
 
 ```{r}
@@ -69,6 +77,7 @@ center_tr10 <- read_csv("https://www2.census.gov/geo/docs/reference/cenpop2010/t
 source("data-raw/03-calculate_closest_distance.R")
 source("data-raw/05-calc_windmodel_data.R")
 source("data-raw/08-idw_precip.R")
+source("data-raw/10-eaglei_county.R")
 ```
 
 ### NC - Matthew 2016
@@ -86,6 +95,7 @@ Matthew16 <- list()
 Matthew16$closest_dis_tr10 <- calc_closest_dist(storm_id, center_tr10_selected)
 Matthew16$windmodel_tr10 <- calc_windmodel_data(storm_id, center_tr10_selected)
 Matthew16$prcp_tr10 <- calc_idw_pred(neighbor_states, center_tr10_selected, storm_id, 12)
+Matthew16$outages_cnty <- calc_outage(storm_id, states_fips, days_after = 5)
 ```
 
 ### TX, LA - Harvey 2017
@@ -103,6 +113,7 @@ Harvey17 <- list()
 Harvey17$closest_dis_tr10 <- calc_closest_dist(storm_id, center_tr10_selected)
 Harvey17$windmodel_tr10 <- calc_windmodel_data(storm_id, center_tr10_selected)
 Harvey17$prcp_tr10 <- calc_idw_pred(neighbor_states, center_tr10_selected, storm_id, 12)
+Harvey17$outages_cnty <- calc_outage(storm_id, states_fips, days_after = 5)
 ```
 
 ### NC - Florence 2018
@@ -120,6 +131,7 @@ Florence18 <- list()
 Florence18$closest_dis_tr10 <- calc_closest_dist(storm_id, center_tr10_selected)
 Florence18$windmodel_tr10 <- calc_windmodel_data(storm_id, center_tr10_selected)
 Florence18$prcp_tr10 <- calc_idw_pred(neighbor_states, center_tr10_selected, storm_id, 12)
+Florence18$outages_cnty <- calc_outage(storm_id, states_fips, days_after = 5)
 ```
 
 ### Output Data
@@ -128,7 +140,8 @@ Florence18$prcp_tr10 <- calc_idw_pred(neighbor_states, center_tr10_selected, sto
 storms <- list(
     "Matthew16" = Matthew16, 
     "Harvey17" = Harvey17, 
-    "Florence18" = Florence18) 
+    "Florence18" = Florence18
+) 
 
 dir.create("output")
 names(storms) %>%
@@ -141,19 +154,4 @@ names(storms) %>%
             
         })
     })
-```
-
-```{r}
-stormEvents <- read_csv("https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/StormEvents_details-ftp_v1.0_d2007_c20240216.csv.gz") 
-
-stormEvents %>%
-     count(EVENT_TYPE) %>% View()
-```
-
-### SVI
-
-```{r}
-SVI_year <- 2016
-
-SVI <- str_c("https://svi.cdc.gov/Documents/Data/", SVI_year, "/csv/states/SVI_," SVI_year, "_US.csv")
 ```
